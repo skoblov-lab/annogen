@@ -20,16 +20,23 @@ GenLocus = NamedTuple("Locus", [("chrom", str), ("pos", Integral),
 
 cdef extern from "mapping.hpp":
 
-    cdef cppclass StringRec:
+    cdef cppclass StringRecs:
         uint8_t first
-        string second
-        StringRec()
-        StringRec(uint8_t, string)
-    cdef cppclass RealRec:
+        vector[string] second
+        StringRecs()
+        StringRecs(uint8_t, vector[string])
+
+    cdef cppclass FloatRecs:
         uint8_t first
-        double second
-        RealRec()
-        RealRec(uint8_t, double)
+        vector[float] second
+        FloatRecs()
+        FloatRecs(uint8_t, vector[float])
+
+    cdef cppclass IntRecs:
+        uint8_t first
+        vector[int32_t] second
+        IntRecs()
+        IntRecs(uint8_t, vector[int32_t])
 
     cdef cppclass Locus:
         uint8_t chrom
@@ -42,11 +49,13 @@ cdef extern from "mapping.hpp":
         cbool operator==(const Locus& other) const
 
     cdef cppclass Records:
-        vector[StringRec] strings
-        vector[RealRec] numbers
+        vector[StringRecs] strings
+        vector[FloatRecs] floats
+        vector[IntRecs] integers
         Records() except +
-        Records(const vector[StringRec]& strings,
-                const vector[RealRec]& numbers) except +
+        Records(const vector[StringRecs]& strings,
+                const vector[FloatRecs]& floats,
+                const vector[IntRecs]& integers) except +
         cbool operatorbool() const
 
     cdef cppclass LocusTable:
@@ -54,6 +63,16 @@ cdef extern from "mapping.hpp":
         Records& operator[](const Locus& key)
         uint64_t size()
 
+    cdef cppclass StringCache:
+        StringCache()
+        int32_t size()
+        int32_t add(const string& entry) except +
+        int32_t find(const string& entry) except +
+        string find(int32_t entry_code) except +
+
+# TODO explicitly ask for data types
+# TODO add cached_strings
+# TODO rewrite encoder and decoder
 
 cdef class GenomeMapping:
 
@@ -79,7 +98,7 @@ cdef class GenomeMapping:
             Records records
 
         for (chrom, pos, ref, alt), annotations in rows:
-            # add a new chromosome and base code if neede
+            # add new chromosome and base codes if needed
             chrom_code = self._chrom_codes.setdefault(chrom, len(self._chrom_codes))
             ref_code = self._base_codes.setdefault(ref, len(self._base_codes))
             alt_code = self._base_codes.setdefault(alt, len(self._base_codes))
