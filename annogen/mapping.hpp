@@ -58,15 +58,15 @@ typedef std::pair<uint8_t, std::vector<int32_t>> IntRecs;          // int record
 
 struct Records {
     // Records associated with a Locus.
-    std::vector<StringRecs> strings;
-    std::vector<RealRecs> floats;
-    std::vector<FloatRecs> integers;
+    std::vector<std::pair<uint8_t , std::vector<std::string>>> strings;
+    std::vector<std::pair<uint8_t, std::vector<float>>> floats;
+    std::vector<std::pair<uint8_t, std::vector<int32_t>>> integers;
 
     Records():
         strings(0), floats(0),  integers(0) {}
-    Records(const std::vector<StringRecs> & strings,
-            const std::vector<FloatRecs> & floats,
-            const std::vector<IntRecs> & integers):
+    Records(const std::vector<std::pair<uint8_t , std::vector<std::string>>> & strings,
+            const std::vector<std::pair<uint8_t, std::vector<float>>> & floats,
+            const std::vector<std::pair<uint8_t, std::vector<int32_t>>> & integers):
         strings(strings), floats(floats), integers(integers) {}
 
     explicit operator bool() const {
@@ -86,38 +86,39 @@ private:
     int32_t sizelimit = INT32_MAX;
 
 public:
+
     StringCache(): cachemap(0), strings(0) {}
 
     int32_t size() {
         return strings.size();
     }
 
-    int32_t add(const std::string& entry) {
+    int32_t cache(const std::string& entry) {
+        if (cachemap.contains(entry)) {
+            return cachemap[entry];
+        }
         if (size() == sizelimit) {
             throw std::runtime_error("Exceeded the cache size limit");
         }
-        strings.push_back(entry);
-        position = strings.size() - 1;
+        int32_t position = strings.size();
         cachemap[entry] = position;
+        strings.push_back(entry);
         return position;
     }
 
-    int32_t find(const std::string& entry) {
-        // Return ID for a string
-        if (!cachemap.contains(entry)) {
-            throw std::invalid_argument("No such entry");
-        }
-        return cachemap[entry];
-    }
-    std::string find(int32_t entry_code) {
+    std::string cache(int32_t entry_code) {
         // Return string for an ID
         // note: although returning a const reference seems more efficient,
-        //       the reference might get invalidated by future calls to `add`,
+        //       the reference might get invalidated by future insertions,
         //       because the `strings` vector might get reallocated.
-        if (!strings.size() > entry_code) {
+        if (strings.size() < entry_code) {
             throw std::invalid_argument("No such entry");
         }
         return strings[entry_code];
+    }
+
+    const std::vector<std::string>& cache() {
+        return strings;
     }
 };
 

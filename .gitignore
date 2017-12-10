@@ -243,5 +243,3 @@ annogen/mapping.cpp
 annogen/mapping.cpython-36m-darwin.so
 annogen/mapping.html
 cidea/
-setup.py
-!/.gitignore
