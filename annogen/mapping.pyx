@@ -227,14 +227,17 @@ cdef class GenomeMapping:
             ]
             # exclude cached strings from intrecs
             list int_features = [
-                (self.feature(code), values) for code, values in intrecs
+                (self.feature(code), values)
+                for code, values in intrecs
                 if self.feature(code) not in self._cached
             ]
             # include cached strings from intrecs
             list string_features = [
-                (self.feature(code), self.frombytes(values)) for code, values in stringrecs
+                (self.feature(code), self.frombytes(values))
+                for code, values in stringrecs
             ] + [
-                (self.feature(code), self.fromcache(values)) for code, values in intrecs
+                (self.feature(code), self.fromcache(values))
+                for code, values in intrecs
                 if self.feature(code) in self._cached
             ]
             dict decoded = {
@@ -247,21 +250,25 @@ cdef class GenomeMapping:
         # separate values by type and cast to either int, str or float
         cdef:
             list strings = [
-                (self.fcode(f), self.tobytes(values)) for f, values in annotations.items() if
-                self._dtypes[f] is str and f not in self._cached
+                (self.fcode(f), self.tobytes(values))
+                for f, values in annotations.items()
+                if self._dtypes[f] is str and f not in self._cached
             ]
             list cached = [
-                (self.fcode(f), self.tocache(values)) for f, values in annotations.items() if
-                self._dtypes[f] is str and f in self._cached
+                (self.fcode(f), self.tocache(values))
+                for f, values in annotations.items()
+                if self._dtypes[f] is str and f in self._cached
             ]
             list floats = [
-                (self.fcode(f), self.cast(float, values)) for f, values in annotations.items() if
-                self._dtypes[f] is float
+                (self.fcode(f), self.cast(float, values))
+                for f, values in annotations.items()
+                if self._dtypes[f] is float
             ]
             # integer records include cached string records
             list ints = [
-                (self.fcode(f), self.cast(int, values)) for f, values in annotations.items() if
-                self._dtypes[f] is int
+                (self.fcode(f), self.cast(int, values))
+                for f, values in annotations.items()
+                if self._dtypes[f] is int
             ] + cached
 
             vector[pair[uint8_t, vector[string]]] stringrecs = strings
@@ -292,10 +299,12 @@ cdef class GenomeMapping:
         return self.frombytes(uncached)
 
     cdef inline list tobytes(self, list unicode_strings):
-        return [s.encode() if not isinstance(s, bytes) else s for s in unicode_strings]
+        return [s.encode() if not isinstance(s, bytes) else s
+                for s in unicode_strings]
 
     cdef inline list frombytes(self, list byte_stings):
-        return [s.decode() if isinstance(s, bytes) else s for s in byte_stings]
+        return [s.decode() if isinstance(s, bytes) else s
+                for s in byte_stings]
 
     cdef inline list cast(self, type constructor, list values):
         return [constructor(val) for val in values]

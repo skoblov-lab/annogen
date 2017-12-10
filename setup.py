@@ -1,4 +1,3 @@
-from __future__ import print_function, division
 from distutils.core import setup
 import os
 
