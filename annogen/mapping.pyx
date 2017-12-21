@@ -1,7 +1,7 @@
 # distutils: language=c++
 # cython: language_level=3, c_string_type=unicode, c_string_encoding=utf8
 
-from typing import Dict, Tuple, Union, Iterable, NamedTuple, Mapping
+from typing import Dict, Tuple, Union, Iterable, NamedTuple, Mapping, List
 from numbers import Integral, Real
 
 from libc.stdint cimport uint8_t, int32_t, uint32_t, uint64_t
@@ -69,9 +69,11 @@ cdef extern from "mapping.hpp":
         string cache(int32_t entry_code) except +
         const vector[string]& cache()
 
+ 
+Site = Tuple[str, int, str, str]  #  chrom, pos, ref, alt
 # TODO explicitly ask for data types
 # TODO add cached_strings
-# TODO rewrite encoder and decoder
+# TODO rewrite encoder and decoder 
 
 cdef class GenomeMapping:
 
@@ -92,7 +94,7 @@ cdef class GenomeMapping:
                  contigs: Iterable[str],
                  alphabet: Iterable[str],
                  cached_strings: Iterable[str],
-                 entries: Iterable):
+                 entries: Iterable[Site, Dict[str, List]]):
         """
         :param features: a mapping from feature to type: int, float or
         str; actual data are not required to be of these types, but they must
